@@ -9,9 +9,7 @@ const char WiFiAPPSW[] = "12345678";
 //设置AP模式下模块所发出的WIFI的密码
 char data[1500];
 IPAddress local_IP(192, 168, 0, 159);
-
 IPAddress gateway(192, 168, 4, 9);
-
 IPAddress subnet(255, 255, 255, 0);
 #define AP_SSID "AP_Lmln_Bale" //这里改成你的AP名字
 
@@ -19,7 +17,6 @@ IPAddress subnet(255, 255, 255, 0);
 void setupWiFi() {
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(local_IP, gateway, subnet);
-
   WiFi.softAP(AP_SSID, AP_PSW);
   Serial.println(); Serial.print ( "IP address: " );
   Serial.println ( WiFi.softAPIP() );
@@ -50,8 +47,6 @@ void loop()
         Serial.println( );
         continue;
       }
-
-
     }
     //若没有可用客户端，则停止连接
     WiFiClient serverClient = server.available();
@@ -89,16 +84,16 @@ void loop()
       }
     }
 
-
-
-
-//   发送到指定客户端。
-    if (serverClients[0] && serverClients[0].connected())
-    {
-      serverClients[0].write(sbuf, len);//向所有客户端发送数据
-      delay(1);
-    }
-  }
+//
+//
+//
+////   发送到指定客户端。
+//    if (serverClients[0] && serverClients[0].connected())
+//    {
+//      serverClients[0].write(sbuf, len);//向所有客户端发送数据
+//      delay(1);
+//    }
+//  }
 
 }
 

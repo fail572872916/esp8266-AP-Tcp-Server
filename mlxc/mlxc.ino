@@ -1,10 +1,14 @@
 
+#include <ArduinoJson.h>
 /*
   Name:    麦轮小车.ino
   Created: 2017/7/7 14:48:33
   Author:  Administrator
 */
 String readString = "";
+StaticJsonBuffer<200> jsonBuffer;
+long  rightCount = 0;
+long  leftCount = 0;
 // the setup function runs once when you press reset or power the board
 void setup() {
   //pwm
@@ -35,80 +39,66 @@ void loop() {
   //  serial_read();
   read();
 }
-
 void read() {
   if (Serial1.available() > 0)
   {
-    //  { i += char(Serial1.read());
     char a = Serial1.read();
     readString += a;
     if (a == '\n') {
       Serial.println(readString);
       Serial1.println(readString);
+
+      JsonObject& root = jsonBuffer.parseObject(readString);
+      if (!root.success()) {
+        Serial3.println("failed");
+        return;
+      }
+      Serial.println(readString);
+       //ToDo 这里要改为 char
+//      serial_read(readString);
       readString = "";
     }
-
   }
 }
 
 
-void serial_read() {
-  if (Serial1.available() > 0)
+void serial_read(char a) {
+  //ToDo 这里要改为 char
+  switch (a)
   {
-    //  { i += char(Serial1.read());
-    char a = char( Serial1.read());
-    //delay(10);
-    switch (a)
-    {
-      case 'w':
-        go_ahead(45, 55, 55, 55);
-        delay(33);
-        Serial.println('w');
-        break;
-      case 'a':
-        go_left(45, 55, 55, 55);
-        delay(33);
-        Serial.println('a');
-        break;
-      case 'd':
-        go_right(45, 55, 55, 55);
-        delay(33);
-        Serial.println('d');
-        break;
-      case 's': go_back(45, 55, 55, 55);
-        delay(33);
-        Serial.println('s');
-        break;
-      case 'e': go_right_up(45, 0, 0, 55);
-        delay(33);
-        Serial.println('e');
-        break;
-      case 'c': go_right_down(45, 0, 0, 55);
-        delay(33);
-        Serial.println('c');
-        break;
-      case 'q': go_left_up(0, 55, 55, 0);
-        delay(33);
-        Serial.println('q');
-        break;
-      case 'z': go_left_down(0, 55, 55, 0);
-        delay(33);
-        Serial.println('z');
-        break;
-      case 'l': right_rotate(45, 55, 55, 55);
-        delay(33);
-        Serial.println('l');
-        break;
-      case 'r':
-        left_rotate(45, 55, 55, 55);
-        delay(33);
-        Serial.println('r');
-        break;
-    }
+    case 'w':
+      go_ahead(45, 55, 55, 55);
+      delay(33);
+      Serial.println('w');
+      break;
+    case 'a':
+      go_left(45, 55, 55, 55);
+      delay(33);
+      Serial.println('a');
+      break;
+    case 'd':
+      go_right(45, 55, 55, 55);
+      delay(33);
+      Serial.println('d');
+      break;
+    case 's': go_back(45, 55, 55, 55);
+      delay(33);
+      Serial.println('s');
+      break;
+    case 'l': right_rotate(45, 55, 55, 55);
+      delay(33);
+      Serial.println('l');
+      break;
+    case 'r':
+      left_rotate(45, 55, 55, 55);
+      delay(33);
+      Serial.println('r');
+      break;
   }
-  else {
-    go_ahead(0, 0, 0, 0);
-  }
+
+  //  else {
+  //    go_ahead(0, 0, 0, 0);
+  //  }
 }
 //前进
 void go_ahead(int s1, int s2, int s3, int s4) {
@@ -184,79 +174,6 @@ void go_right(int s1, int s2, int s3, int s4) {
 }
 
 
-//右上
-void go_right_up(int s1, int s2, int s3, int s4) {
-  digitalWrite(47, HIGH);
-  digitalWrite(46, LOW);
-  analogWrite(8, s1);
-
-  digitalWrite(53, LOW);
-  digitalWrite(52, LOW);
-  analogWrite(9, s2);
-
-  digitalWrite(51, HIGH);
-  digitalWrite(50, LOW);
-  analogWrite(10, s3);
-
-  digitalWrite(49, LOW);
-  digitalWrite(48, LOW);
-  analogWrite(11, s4);
-}
-
-//右下
-void go_right_down(int s1, int s2, int s3, int s4) {
-  digitalWrite(47, LOW);
-  digitalWrite(46, LOW);
-  analogWrite(8, s1);
-
-  digitalWrite(53, LOW);
-  digitalWrite(52, LOW);
-  analogWrite(9, s2);
-
-  digitalWrite(51, HIGH);
-  digitalWrite(50, LOW);
-  analogWrite(10, s3);
-
-  digitalWrite(49, HIGH);
-  digitalWrite(48, LOW);
-  analogWrite(11, s4);
-}
-//左上
-void go_left_up(int s1, int s2, int s3, int s4) {
-  digitalWrite(47, LOW);
-  digitalWrite(46, LOW);
-  analogWrite(8, s1);
-
-  digitalWrite(53, LOW);
-  digitalWrite(52, LOW);
-  analogWrite(9, s2);
-
-  digitalWrite(51, HIGH);
-  digitalWrite(50, LOW);
-  analogWrite(10, s3);
-
-  digitalWrite(49, HIGH);
-  digitalWrite(48, LOW);
-  analogWrite(11, s4);
-}
-//左下
-void go_left_down(int s1, int s2, int s3, int s4) {
-  digitalWrite(47, LOW);
-  digitalWrite(46, LOW);
-  analogWrite(8, s1);
-
-  digitalWrite(53, HIGH);
-  digitalWrite(52, LOW);
-  analogWrite(9, s2);
-
-  digitalWrite(51, LOW);
-  digitalWrite(50, LOW);
-  analogWrite(10, s3);
-
-  digitalWrite(49, HIGH);
-  digitalWrite(48, LOW);
-  analogWrite(11, s4);
-}
 
 //旋转-右
 void right_rotate(int s1, int s2, int s3, int s4) {
@@ -295,3 +212,73 @@ void left_rotate(int s1, int s2, int s3, int s4) {
   digitalWrite(48, LOW);
   analogWrite(11, s4);
 }
+
+
+
+
+
+
+
+
+//90goLeft
+void goLeft_90()
+{
+  //  可能需要在这增加编码器
+  if ( rightCount  <= 390 || leftCount >= -390)
+  {
+
+    go_left(45, 55, 55, 55);
+    return;
+  }
+  else   {
+    go_ahead(0, 0, 0, 0);
+    leftCount = 0;
+    rightCount = 0;
+    //Todo
+    
+    delay(1500);
+
+  }
+}
+
+//90掳goRight
+void goRight_90() {
+  if (leftCount <= 392 || rightCount >= -392)
+  {
+
+    go_right(45, 55, 55, 55);
+
+    return;
+  } else {
+    go_ahead(0, 0,0,0);
+    leftCount = 0;
+    rightCount = 0;
+   
+
+    delay(1500);
+  }
+}
+
+//180goLeft
+void goLeft_180() {
+  //  todo
+  if ( rightCount  <= 790 || leftCount >= -790)
+  {
+
+  go_left(45, 55, 55, 55);
+    return;
+  } else {
+    go_ahead(0, 0,0,0);
+    leftCount = 0;
+    rightCount = 0;
+   
+    delay(1500);
+  }
+}
+
+
+
+
+
+
+
