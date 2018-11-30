@@ -7,8 +7,22 @@
 */
 String readString = "";
 StaticJsonBuffer<200> jsonBuffer;
-long  rightCount = 0;
-long  leftCount = 0;
+long  rightTopCount = 0;
+long  leftTopCount = 0;
+long  rightBottomCount = 0;
+long  leftBottomCount = 0;
+
+
+#define leftTopPinA 2 //外部中断1
+#define rightTopPinB 22 //编码器的OUTB信号连接到数字端口
+#define rightTopA 3 //外部中断0
+#define rightTopB 23 //编码器的OUTB信号连接到数字端口
+
+#define leftBottomPinA 18 //外部中断5
+#define leftBottomPinB 24 //编码器的OUTB信号连接到数字端口
+
+#define rightBottomPinA 19 //外部中断4
+#define rightBottomPinB 25 //编码器的OUTB信号连接到数字端口
 // the setup function runs once when you press reset or power the board
 void setup() {
   //pwm
@@ -224,7 +238,7 @@ void left_rotate(int s1, int s2, int s3, int s4) {
 void goLeft_90()
 {
   //  可能需要在这增加编码器
-  if ( rightCount  <= 390 || leftCount >= -390)
+  if ( rightTopCount  <= 390 || leftTopCount >= -390)
   {
 
     go_left(45, 55, 55, 55);
@@ -232,8 +246,8 @@ void goLeft_90()
   }
   else   {
     go_ahead(0, 0, 0, 0);
-    leftCount = 0;
-    rightCount = 0;
+    leftTopCount = 0;
+    rightTopCount = 0;
     //Todo
     
     delay(1500);
@@ -243,7 +257,7 @@ void goLeft_90()
 
 //90掳goRight
 void goRight_90() {
-  if (leftCount <= 392 || rightCount >= -392)
+  if (leftTopCount <= 392 || rightTopCount >= -392)
   {
 
     go_right(45, 55, 55, 55);
@@ -251,8 +265,8 @@ void goRight_90() {
     return;
   } else {
     go_ahead(0, 0,0,0);
-    leftCount = 0;
-    rightCount = 0;
+    leftTopCount = 0;
+    rightTopCount = 0;
    
 
     delay(1500);
@@ -262,15 +276,15 @@ void goRight_90() {
 //180goLeft
 void goLeft_180() {
   //  todo
-  if ( rightCount  <= 790 || leftCount >= -790)
+  if ( rightTopCount  <= 790 || leftTopCount >= -790)
   {
 
   go_left(45, 55, 55, 55);
     return;
   } else {
     go_ahead(0, 0,0,0);
-    leftCount = 0;
-    rightCount = 0;
+    leftTopCount = 0;
+    rightTopCount = 0;
    
     delay(1500);
   }
