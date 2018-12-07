@@ -43,7 +43,7 @@ void setup() {
   pinMode(52, OUTPUT);
 
   Serial.begin(9600);
-  Serial1.begin(115200);
+  Serial2.begin(115200);
 
 }
 
@@ -55,39 +55,41 @@ void loop() {
   read();
 }
 void read() {
-  if (Serial1.available() > 0)
+  if (Serial2.available() > 0)
   {
-    char a = Serial1.read();
+    char a = Serial2.read();
     readString += a;
     if (a == '\n') {
       Serial.println(readString);
-      //      Serial1.println(readString);
-
       JsonObject& root = jsonBuffer.parseObject(readString);
       if (!root.success()) {
         JsonObject& root1 = jsonBuffer.createObject();
         root1["message"] = "fail";
         root1["operationCode"] = -1;
 
-        root1.printTo(Serial1);
-        Serial3.println("failed");
+        root1.printTo(Serial2);
+        Serial2.println("failed");
+         Serial.println("failed");
+        readString = "";
         return;
       }
       String  message = root["message"];
       long type          = root["operationCode"];
-
+     
       //ToDo 这里要改为 char
 
       if (type == 2) {
         serial_read(message);
+
       }
-      readString = "";
+ readString = "";
     }
+
   }
- 
+
 
   //  if (isRun) {
-  
+
   //    attachInterrupt(0, toTopLeftCode, FALLING);   //脉冲中断函数
   //    attachInterrupt(1, toTopRightCode, FALLING);   //脉冲中断函数
   //    attachInterrupt(5, toBottomLeftCode, FALLING);   //脉冲中断函数
@@ -98,23 +100,23 @@ void read() {
 
 void serial_read(String  a) {
   //ToDo 这里要改为 char
-  if (a == "t") {
+  if (a.equals( "t")) {
 
     go_ahead(45, 55, 55, 55);
     delay(33);
     Serial.println('w');
   }
-  else if ( a == "l") {
+  else if (  a. equals( "l")) {
     go_left(45, 55, 55, 55);
     delay(33);
     Serial.println('a');
 
-  }     else if ( a == "r") {
+  }     else if (  a. equals(  "r")) {
     go_right(45, 55, 55, 55);
     delay(33);
     Serial.println('d');
 
-  } else if ( a == "b") {
+  } else if ( a. equals( "b")) {
     go_back(45, 55, 55, 55);
 
     delay(33);
