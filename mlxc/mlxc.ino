@@ -12,10 +12,11 @@ long  leftTopCount = 0;
 long  rightBottomCount = 0;
 long  leftBottomCount = 0;
 
-
-#define leftTopPinA 2 //外部中断1
+boolean isRun = false;
+unsigned long time1 = 0;  // 时间标记
+#define leftTopPinA 2 //外部中断0
 #define rightTopPinB 22 //编码器的OUTB信号连接到数字端口
-#define rightTopA 3 //外部中断0
+#define rightTopA 3 //外部中断1
 #define rightTopB 23 //编码器的OUTB信号连接到数字端口
 
 #define leftBottomPinA 18 //外部中断5
@@ -60,59 +61,82 @@ void read() {
     readString += a;
     if (a == '\n') {
       Serial.println(readString);
-      Serial1.println(readString);
+      //      Serial1.println(readString);
 
       JsonObject& root = jsonBuffer.parseObject(readString);
       if (!root.success()) {
+        JsonObject& root1 = jsonBuffer.createObject();
+        root1["message"] = "fail";
+        root1["operationCode"] = -1;
+
+        root1.printTo(Serial1);
         Serial3.println("failed");
         return;
       }
-      Serial.println(readString);
-       //ToDo 这里要改为 char
-//      serial_read(readString);
+      String  message = root["message"];
+      long type          = root["operationCode"];
+
+      //ToDo 这里要改为 char
+
+      if (type == 2) {
+        serial_read(message);
+      }
       readString = "";
     }
   }
+ 
+
+  //  if (isRun) {
+  
+  //    attachInterrupt(0, toTopLeftCode, FALLING);   //脉冲中断函数
+  //    attachInterrupt(1, toTopRightCode, FALLING);   //脉冲中断函数
+  //    attachInterrupt(5, toBottomLeftCode, FALLING);   //脉冲中断函数
+  //    attachInterrupt(4, toBottomRightCode, FALLING);   //脉冲中断函数
+  //  }
 }
 
 
-void serial_read(char a) {
+void serial_read(String  a) {
   //ToDo 这里要改为 char
-  switch (a)
-  {
-    case 'w':
-      go_ahead(45, 55, 55, 55);
-      delay(33);
-      Serial.println('w');
-      break;
-    case 'a':
-      go_left(45, 55, 55, 55);
-      delay(33);
-      Serial.println('a');
-      break;
-    case 'd':
-      go_right(45, 55, 55, 55);
-      delay(33);
-      Serial.println('d');
-      break;
-    case 's': go_back(45, 55, 55, 55);
-      delay(33);
-      Serial.println('s');
-      break;
-    case 'l': right_rotate(45, 55, 55, 55);
-      delay(33);
-      Serial.println('l');
-      break;
-    case 'r':
-      left_rotate(45, 55, 55, 55);
-      delay(33);
-      Serial.println('r');
-      break;
+  if (a == "t") {
+
+    go_ahead(45, 55, 55, 55);
+    delay(33);
+    Serial.println('w');
   }
+  else if ( a == "l") {
+    go_left(45, 55, 55, 55);
+    delay(33);
+    Serial.println('a');
+
+  }     else if ( a == "r") {
+    go_right(45, 55, 55, 55);
+    delay(33);
+    Serial.println('d');
+
+  } else if ( a == "b") {
+    go_back(45, 55, 55, 55);
+
+    delay(33);
+    Serial.println('s');
+
+
+  }
+  //    case 'l': right_rotate(45, 55, 55, 55);
+  //      delay(33);
+  //      Serial.println('l');
+  //      break;
+  //    case 'r':
+  //      left_rotate(45, 55, 55, 55);
+  //      delay(33);
+  //      Serial.println('r');
+  //      break;
+
 
   //  else {
   //    go_ahead(0, 0, 0, 0);
   //  }
+
 }
 //前进
 void go_ahead(int s1, int s2, int s3, int s4) {
@@ -240,18 +264,11 @@ void goLeft_90()
   //  可能需要在这增加编码器
   if ( rightTopCount  <= 390 || leftTopCount >= -390)
   {
-
     go_left(45, 55, 55, 55);
     return;
   }
   else   {
-    go_ahead(0, 0, 0, 0);
-    leftTopCount = 0;
-    rightTopCount = 0;
-    //Todo
-    
-    delay(1500);
-
+    //    detachInter();
   }
 }
 
@@ -264,12 +281,7 @@ void goRight_90() {
 
     return;
   } else {
-    go_ahead(0, 0,0,0);
-    leftTopCount = 0;
-    rightTopCount = 0;
-   
-
-    delay(1500);
+    //    detachInter();
   }
 }
 
@@ -278,15 +290,11 @@ void goLeft_180() {
   //  todo
   if ( rightTopCount  <= 790 || leftTopCount >= -790)
   {
-
-  go_left(45, 55, 55, 55);
+    go_left(45, 55, 55, 55);
     return;
   } else {
-    go_ahead(0, 0,0,0);
-    leftTopCount = 0;
-    rightTopCount = 0;
-   
-    delay(1500);
+
+    //    detachInter();
   }
 }
 
@@ -295,4 +303,111 @@ void goLeft_180() {
 
 
 
+// 编码器计数中断子程序
+//void toTopLeftCode()
+//{
+//  //为了不计入噪音干扰脉冲，
+//  //当2次中断之间的时间大于5ms时，计一次有效计数
+//  if ((millis() - time1) > 5)
+//  {
+//    //当编码器码盘的OUTA脉冲信号下跳沿每中断一次，
+//    if ((digitalRead(leftTopPinA) == LOW) && (digitalRead(leftTopPinB) == HIGH))
+//    {
+//      leftTopCount--;
+//    }
+//    else
+//    {
+//      leftTopCount++;
+//    }
+//  }
+//  time1 == millis();
+//}
 
+//void toTopRightCode()
+//{
+//  //为了不计入噪音干扰脉冲，
+//  //当2次中断之间的时间大于5ms时，计一次有效计数
+//  if ((millis() - time1) > 5)
+//  {
+//    //当编码器码盘的OUTA脉冲信号下跳沿每中断一次，
+//    if ((digitalRead(leftPinA) == LOW) && (digitalRead(leftPinB) == HIGH))
+//    {
+//      rightTopCount--;
+//    }
+//    else
+//    {
+//      rightTopCount++;
+//    }
+//  }
+//  time1 == millis();
+//}
+
+
+//void toBottomLeftCode()
+//{
+//  //为了不计入噪音干扰脉冲，
+//  //当2次中断之间的时间大于5ms时，计一次有效计数
+//  if ((millis() - time1) > 5)
+//  {
+//    //当编码器码盘的OUTA脉冲信号下跳沿每中断一次，
+//    if ((digitalRead(leftBottomPinA) == LOW) && (digitalRead(leftBottomPinB) == HIGH))
+//    {
+//      leftBottomCount--;
+//    }
+//    else
+//    {
+//      leftBottomCount++;
+//    }
+//  }
+//  time1 == millis();
+//}
+
+
+//void toBottomRightCode()
+//{
+//  //为了不计入噪音干扰脉冲，
+//  //当2次中断之间的时间大于5ms时，计一次有效计数
+//  if ((millis() - time1) > 5)
+//  {
+//    //当编码器码盘的OUTA脉冲信号下跳沿每中断一次，
+//    if ((digitalRead(rightBottomPinA) == LOW) && (digitalRead(rightBottomPinB) == HIGH))
+//    {
+//      rightBottomCount--;
+//    }
+//    else
+//    {
+//      rightBottomCount++;
+//    }
+//  }
+//  time1 == millis();
+//}
+//
+//
+//void  detachInter() {
+//  detachInterrupt(0);
+//  detachInterrupt(1);
+//  detachInterrupt(4);
+//  detachInterrupt(5);
+//  go_ahead(0, 0, 0, 0);
+//  isRun = false;
+//  rightBottomCount = 0;
+//  leftBottomCount = 0;
+//  leftTopCount = 0;
+//  rightTopCount = 0;
+//  delay(1500);
+//}
+
+void backEncoder() {
+
+  JsonObject& root = jsonBuffer.createObject();
+  root["leftTop"] = leftTopCount;
+  root["ritTop"] = rightTopCount;
+  root["leftBottom"] = leftBottomCount;
+  root["rightBottom"] = rightBottomCount;
+
+
+  //  JsonObject& data = jsonBuffer.createObject();
+  //
+  //  data.add(data);
+
+}
